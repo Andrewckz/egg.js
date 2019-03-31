@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <title>注册页——荔枝微课</title>
+
+</head>
+<body>
+<div id="app">
+    <el-form label-position="top" label-width="80px" style="width: 350px;margin: auto; margin-top: 80px" v-loading="loading">
+        <el-form-item style="margin: auto; margin-bottom: 30px; text-align: center">
+            <img src="https://open.lizhiweike.com/oauth2/login/logo.png?c69586d62a2ede03d7b13d61da56929b" width="250px" />
+        </el-form-item>
+
+        <el-form-item>
+            <el-input v-model="formdata.username" placeholder="账号"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-input pla v-model="formdata.password" placeholder="密码"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-input pla v-model="formdata.repeat_password" placeholder="再次输入密码"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="danger" style="width: 100%" @click="handleRegister">注册</el-button>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="danger" style="width: 100%" @click="handleLogin" plain>前往登录</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+</body>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data() {
+            const self = this;
+            return {
+                formdata:{
+                    username: '',
+                    password: '',
+                    repeat_password: '',
+                },
+                loading: false,
+            }
+        },
+        computed: {
+            signText: function () {
+                const self = this;
+
+                return self.sign({
+                    appkey: self.formdata.appkey,
+                    data: self.formdata.data,
+                }, self.secret);
+                // return this.formdata.appkey;
+            },
+        },
+        created: function () {
+            // this.checkLogin();
+        },
+        methods: {
+            // 远程搜索商家
+            checkLogin(){
+                // Cookies.set('name', 'value');
+                var token = Cookies.get('token');
+                if(token){
+                    window.location.href = '/user';
+                }
+            },
+            handleRegister(){
+                const self = this;
+                if(!(self.formdata.username && self.formdata.password)){
+                    this.$notify.error({
+                        title: '错误',
+                        message: '账号/密码 必填'
+                    });
+                    return false;
+                }
+                if(self.repeat_password != self.password){
+                    this.$notify.error({
+                        title: '错误',
+                        message: '两次密码输入不相同'
+                    });
+                    return false;
+                }
+
+                self.loading = true;
+                $.ajax({
+                    url: '/api/register',
+                    type: "POST",
+                    dataType: "JSON",
+                    data: self.formdata,
+                    success: res => {
+                        self.loading = false;
+                        if(res.code != 200){
+                            this.$notify.error({
+                                title: '错误',
+                                message: res.msg
+                            });
+                            return false;
+                        }
+                        this.$notify({
+                            title: '注册成功',
+                            type: 'success'
+                        });
+                        //
+                        setTimeout(function () {
+                            window.location.href = '/user';
+                        }, 1000);
+                    },
+                    error: err=>{
+                    }
+                })
+            },
+            handleLogin(){
+                const self = this;
+
+                window.location.href = '/login';
+            },
+        }
+    });
+</script>
+</html>
